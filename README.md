@@ -1,4 +1,4 @@
-# fullstackopen2020_fso3a: a4_nodemon
+# fullstackopen2020_fso3a: a1_webserver
 * Sử dụng thư viện nodemon để khi chúng ta chỉnh sửa lại code thì ko cần restart server mà chỉ cần refresh browser.
 ```html
 npm install --save-dev nodemon
