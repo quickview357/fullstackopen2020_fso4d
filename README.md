@@ -1,1 +1,2 @@
-fso_3c
+#Run mongo on node
+node mongo.js mongodbpassword
