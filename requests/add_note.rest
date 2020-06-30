@@ -2,6 +2,6 @@ POST http://localhost:5000/api/notes
 Content-Type: application/json
 
 {
-    "content": "HTML is very easy yyy",    
+    "content": "HTML is very easy hvquang",    
     "important": true   
 }
