@@ -1,34 +1,17 @@
-const express = require('express')
-const mongoose = require('mongoose')
+require('dotenv').config()
 
 //start node server
+const express = require('express')
 const app = express()
-const port = 5000
+app.use(express.json())
+const port = process.env.PORT
 app.listen(port, ()=>{
   console.log(`Server running on port ${port}`)
 })
 
-//mongo db connect
-const url = `mongodb+srv://fullstackopen:quang2000@cluster0-lbo1o.mongodb.net/fullstackopendb?retryWrites=true&w=majority`
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 
-//note schema and instance of note
-const noteSchema = new mongoose.Schema({
-  content: String,
-  date: Date,
-  important: Boolean,
-})
-const Note = mongoose.model('Note', noteSchema)
-
-//using id auto of mongo like our id (options)
-noteSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
-    delete returnedObject.__v
-  }
-})
-
+//const Note = mongoose.model('Note', noteSchema)
+const Note = require('./models/note')
 
 //
 //api
@@ -52,3 +35,23 @@ app.delete('/api/notes/:id', (request, response) => {
   const id = Number(request.params.id)
   response.send(id.toString());  
 })
+
+app.post('/api/notes', (request, response) => {
+  const body = request.body
+
+  if (body.content === undefined) {
+    return response.status(400).json({ error: 'content missing' })
+  }
+
+  const note = new Note({
+    content: body.content,
+    important: body.important || false,
+    date: new Date(),
+  })
+
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
+})
+
+
