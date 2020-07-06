@@ -20,7 +20,7 @@
                 "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push && npm run deploy",
                 "logs:prod": "heroku logs --tail",
                 "lint": "eslint .",
-                ```"test": "jest --verbose"```
+                "test": "jest --verbose"
             },
             //...
         }
@@ -45,5 +45,6 @@
 
 * Tạo file for_testing.js trong thư mục utils, file này dùng để phục vụ cho việc áp dụng thư viện jest (để test)
 * Tạo thư mục tests để chứa các unit test. Trong thư mục ta tạo 2 file: palindrome.test.js và average.test.js, các file này có convention là có đuôi test.js.
+* Finally run file npm run test: npm test
 
 
