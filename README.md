@@ -1,38 +1,51 @@
-# 4b_2: SuperTest
-* Cài thư viện [supertest](https://github.com/visionmedia/supertest) 
-    ```js 
-    npm install --save-dev supertest
-    ```
-* Add file `note_api.test.js` vào thư mục tests, trong file này ta có 33 unit test: `notes are returned as json`, `there are two notes`, `the first note is about HTTP methods`.
-    Run test bằng lệnh:
+# 4b_3: Initializing the database before tests
+Các unit test của chúng ta ở trên hoạt động tốt, tuy nhiên chúng thật sự hơi tệ vì phụ thuộc vào trạng thái dữ liệu của database. Do đó để cải tiến chúng ta cần reset database và generate test data theo cách được kiểm soát trước khi run test.
+* Ở bài trước Jest cho phép đóng kết nối với db sau khi test done bằng lệnh [afterAll](https://jestjs.io/docs/en/api.html#afterallfn-timeout), thì bây jo Jest cũng cung cấp cho ta các [functions](https://jestjs.io/docs/en/setup-teardown.html#content) để run trước khi chạy test, ví dụ [beforeEach](https://jestjs.io/docs/en/setup-teardown.html#content)
+* Let's initialize the database before every test with the [beforeEach](https://jestjs.io/docs/en/setup-teardown.html#content) function:
     ```js
-    test toàn bộ: npm test
-    ```
-     ```js
-    test theo file: npm test 'note_api.test.js'
-    ```
-     ```js
-    test theo unit test: npm test -- -t 'notes are returned as json'
-    ```
-    Trong file này ta dùng hàm [expect](https://jestjs.io/docs/en/expect.html#content) của Jest để kiểm tra kết quả test.
+    const api = supertest(app)
+    const Note = require('../models/note')
 
+    const initialNotes = [
+    {
+        content: 'HTML is easy',
+        important: false,
+    },
+    {
+        content: 'Browser can execute only Javascript',
+        important: true,
+    },
+    ]
 
-* The middleware that outputs information about the HTTP requests is obstructing the test execution output. Let us modify the logger so that it does not print to console in test mode. Chỉnh lại file logger.js trong thư mục utils như sau:
+    beforeEach(async () => {
+    await Note.deleteMany({})
+
+    let noteObject = new Note(initialNotes[0])
+    await noteObject.save()
+
+    noteObject = new Note(initialNotes[1])
+    await noteObject.save()
+    })
+    ```
+    Sau đó thêm 2 unit test sau vào file note_api.test.jsjs
     ```js
-    const info = (...params) => {
-        if (process.env.NODE_ENV !== 'test') { 
-            console.log(...params)
-        }
-    }
+    test('all notes are returned', async () => {
+        const response = await api.get('/api/notes')
 
-    const error = (...params) => {
-        console.error(...params)
-    }
+        expect(response.body).toHaveLength(initialNotes.length)
+    })
+    
+    test('a specific note is within the returned notes', async () => {
+        const response = await api.get('/api/notes')
 
-    module.exports = {
-        info, error
-    }
+        const contents = response.body.map(r => r.content)
+
+        expect(contents).toContain(
+            'Browser can execute only Javascript'
+        )
+    })
     ```
+* Với cách cài đặt như trên thì các unit test vẫn run ok mà ko phụ thuộc vào trạng thái dữ liệu của database.
 
 
     
