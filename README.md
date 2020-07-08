@@ -17,6 +17,24 @@
     Trong file này ta dùng hàm [expect](https://jestjs.io/docs/en/expect.html#content) của Jest để kiểm tra kết quả test.
 
 
+* The middleware that outputs information about the HTTP requests is obstructing the test execution output. Let us modify the logger so that it does not print to console in test mode. Chỉnh lại file logger.js trong thư mục utils như sau:
+    ```js
+    const info = (...params) => {
+        if (process.env.NODE_ENV !== 'test') { 
+            console.log(...params)
+        }
+    }
+
+    const error = (...params) => {
+        console.error(...params)
+    }
+
+    module.exports = {
+        info, error
+    }
+    ```
+
+
     
 
 
