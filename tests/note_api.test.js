@@ -26,6 +26,13 @@ beforeEach(async () => {
     await noteObject.save()
 })
 
+test('notes are returned as json', async () => {
+  await api
+    .get('/api/notes')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+})
+
 test('all notes are returned', async () => {
     const response = await api.get('/api/notes')
 
