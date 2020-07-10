@@ -1,31 +1,22 @@
 const notesRouter = require('express').Router()
 const Note = require('../models/note')
 
-notesRouter.get('/', async (request, response, next) => {
-  try {
-    notes = await Note.find({})
-    response.json(notes.map(note => note.toJSON()))
-  } catch (exception) {
-    next(exception)
-  }  
+notesRouter.get('/', async (request, response) => {
+  notes = await Note.find({})
+  response.json(notes.map(note => note.toJSON()))
 })
 
-notesRouter.get('/:id',async (request, response, next) => {
-  try{
-    const note = await Note.findById(request.params.id)
-    if (note) {
-      response.json(note)
-    } else {
-      console.log('quang error')
-      response.status(404).end()
-    }
+notesRouter.get('/:id',async (request, response) => {
+  const note = await Note.findById(request.params.id)
+  if (note) {
+    response.json(note)
+  } else {
+    console.log('quang error')
+    response.status(404).end()
   }
-  catch(exception) {
-    next(exception)
-  }  
 })
 
-notesRouter.post('/', async (request, response, next) => {
+notesRouter.post('/', async (request, response) => {
   const body = request.body
 
   const note = new Note({
@@ -34,25 +25,17 @@ notesRouter.post('/', async (request, response, next) => {
     date: new Date(),
   })
 
-  try { 
-    const savedNote = await note.save()
-    response.json(savedNote)
-  } catch(exception) {
-    next(exception)
-  }  
+  const savedNote = await note.save()
+  response.json(savedNote)  
 })
 
 
-notesRouter.delete('/:id', async (request, response, next) => {
-  try {
-    await Note.findByIdAndRemove(request.params.id)
-    response.status(204).end()
-  } catch (exception) {
-    next(exception)
-  }  
+notesRouter.delete('/:id', async (request, response) => {
+  await Note.findByIdAndRemove(request.params.id)
+  response.status(204).end()
 })
 
-notesRouter.put('/:id', async (request, response, next) => {
+notesRouter.put('/:id', async (request, response) => {
   const body = request.body
 
   const note = {
@@ -60,12 +43,8 @@ notesRouter.put('/:id', async (request, response, next) => {
     important: body.important,
   }
 
-  try {
-    updatedNote = await Note.findByIdAndUpdate(request.params.id, note, { new: true })
-    response.json(updatedNote)
-  } catch (exception) {
-    next(exception)
-  }    
+  updatedNote = await Note.findByIdAndUpdate(request.params.id, note, { new: true })
+  response.json(updatedNote)   
 })
 
 module.exports = notesRouter
