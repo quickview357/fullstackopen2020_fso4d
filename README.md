@@ -1,52 +1,75 @@
-# 4b_9: Eliminating the try catch
-* Như ta thấy ở trong code backend các router đều có try catch
+# 4b_10: Optimizing beforeEach function
+* Hàm beforeEach như cũ chạy ok, như có vẻ hơi thủ công
     ```js
-    try {
-        // do the async operations here
-    } catch(exception) {
-        next(exception)
+    beforeEach(async () => {
+    await Note.deleteMany({})
+
+    let noteObject = new Note(helper.initialNotes[0])
+    await noteObject.save()
+
+    noteObject = new Note(helper.initialNotes[1])
+    await noteObject.save()
+    })
+    ```
+    * Ta có thể chỉnh lại như sau:
+    ```js
+    beforeEach(async () => {
+        await Note.deleteMany({})
+        console.log('cleared')
+
+        helper.initialNotes.forEach(async (note) => {
+            let noteObject = new Note(note)
+            await noteObject.save()
+            console.log('saved')
+        })
+        console.log('done')
+    })
+
+    test('notes are returned as json', async () => {
+        console.log('entered test')
+        // ...
     }
     ```
-* Câu hỏi đặt ra là có cách nào loại bỏ try catch này mà vẫn catch được lỗi hay không? Giải pháp là dùng thư viện `express-async-errors`. Chỉ cần khai báo thư viện này trong file `app.js`, lỗi sẽ được catch như bình thường.
+    Đoạn code trên chạy có vẻ không ổn, kết quả in ra sẽ là:
+    `
+    cleared
+    done
+    entered test
+    saved
+    saved
+    `
+    Mặc dù chúng ta dùng `await` nhưng các dòng lệnh ngoài vòng forEach vẫn tiếp tục chạy, điều này dẫn đến sai kêt quả test, vì code chạy không đúng thứ tự.
+
+* Để giải quyết vấn đề trên ta dùng phương thức [Promise.all](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
     ```js
-    npm install express-async-errors --save
+    beforeEach(async () => {
+        await Note.deleteMany({})
+
+        const noteObjects = helper.initialNotes.map(note => new Note(note))
+        const promiseArray = noteObjects.map(note => note.save())
+        await Promise.all(promiseArray)
+    })
     ```
-
+* Ta cũng có thể lấy giá trị trả về của Promise.all:
     ```js
-    const config = require('./utils/config')
-    const express = require('express')
-    require('express-async-errors')
-    const app = express()
-    const cors = require('cors')
-    const notesRouter = require('./controllers/notes')
-    const middleware = require('./utils/middleware')
-    const logger = require('./utils/logger')
-    const mongoose = require('mongoose')
-
-    // ...
-
-    module.exports = app
+    const results = await Promise.all(promiseArray)
     ```
+    `results` chứa các giá trị đã được resolved của mỗi promise theo đúng thứ tự của các promise trong mảng promiseArray
 
-* Code trong controller sẽ như sau:
+* Promise.all executes the promises it receives in parallel. If the promises need to be executed in a particular order, this will be problematic. In situations like this, the operations can be executed inside of a for...of block, that guarantees a specific execution order.
     ```js
-    notesRouter.delete('/:id', async (request, response, next) => {
-        try {
-            await Note.findByIdAndRemove(request.params.id)
-            response.status(204).end()
-        } catch (exception) {
-            next(exception)
+    beforeEach(async () => {
+        await Note.deleteMany({})
+
+        for (let note of helper.initialNotes) {
+            let noteObject = new Note(note)
+            await noteObject.save()
         }
     })
     ```
-    sau khi loại bỏ try/catchcatch
-    ```js
-    notesRouter.delete('/:id', async (request, response) => {
-        await Note.findByIdAndRemove(request.params.id)
-        response.status(204).end()
-    })
-    ```
-    `
+
+
+
 
 
 
