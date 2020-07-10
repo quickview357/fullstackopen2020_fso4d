@@ -2,6 +2,6 @@ PUT http://localhost:5000/api/notes/5efa1a3d1c3dfa2b207bf7f0
 Content-Type: application/json
 
 {
-    "content": "HTML is Easy is edited by quang",    
+    "content": "HTML is Easy is edited by quang using async/await",    
     "important": false   
 }
