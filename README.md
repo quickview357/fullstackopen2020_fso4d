@@ -1,49 +1,74 @@
-# 4c_2: Mongoose schema for users
-* Giả sử ta tạo bảng User, bảng User và bảng Note có quan hệ 1-nhiều.
-* Mongo db là document database, nó ko biết khóa ngoại như cơ sở dữ liệu quan hệ. 
-    * Nếu là dữ liệu quan hệ ta sẽ lưu UserID ở bảng Note
-    * Còn MongoDb thì có nhiều cách lưu, tùy cách chúng ta thiết kế sao cho phù hợp với ứng dụng.         
-        * Bảng User lưu danh sách các Id của Note, còn Note thì lưu Id của User
-        * Ví dụ bảng User sẽ lưu danh sách các Note, bảng Note thì lưu User
-* Tạo file user.js trong thư mục models. Ta định nghĩ cấu trúc cho bảng User như sau:
+# 4c_3: Creating Users
+* The password hash is the output of a [one-way](https://en.wikipedia.org/wiki/Cryptographic_hash_function) hash function applied to the user's password. It is never wise to store unencrypted plain text passwords in the database!.
+* Let's install the [bcrypt](https://github.com/kelektiv/node.bcrypt.js) package for generating the password hashes:
     ```js
-    const mongoose = require('mongoose')
+    npm install bcrypt --save
+    ```
+* Tạo file controllers/users.js
+    ```js
+    const usersRouter = require('express').Router()
+    const User = require('../models/user')
 
-    const userSchema = new mongoose.Schema({
-        username: String,
+    usersRouter.post('/', async (request, response) => {
+    const body = request.body
+
+    const saltRounds = 10
+    const passwordHash = await bcrypt.hash(body.password, saltRounds)
+
+    const user = new User({
+        username: body.username,
+        name: body.name,
+        passwordHash,
+    })
+
+    const savedUser = await user.save()
+
+    response.json(savedUser)
+    })
+
+    module.exports = usersRouter
+    ```
+* Nhúng file controllers/users.js vào file app.js
+    ```js
+    const usersRouter = require('./controllers/users')
+    app.use('/api/users', usersRouter)
+    ```
+* Cài thêm thư viện `npm install --save mongoose-unique-validator` để set unique cho một field nào đó, trong trường hợp này là userName
+    * Sau khi cài xong thư viện thì ta phải chỉnh sửa lại model của user như sau:
+        ```js
+        const mongoose = require('mongoose')
+        const uniqueValidator = require('mongoose-unique-validator') //add
+
+        const userSchema = mongoose.Schema({
+        username: {
+            type: String,
+            unique: true //add
+        },
         name: String,
         passwordHash: String,
         notes: [
             {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Note'
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Note'
             }
         ],
-    })
+        })
 
-    userSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-        // the passwordHash should not be revealed
-        delete returnedObject.passwordHash
-    }
-    })
+        userSchema.set('toJSON', {
+        transform: (document, returnedObject) => {
+            returnedObject.id = returnedObject._id.toString()
+            delete returnedObject._id
+            delete returnedObject.__v
+            delete returnedObject.passwordHash
+        }
+        })
 
-    const User = mongoose.model('User', userSchema)
+        userSchema.plugin(uniqueValidator) //add
 
-    module.exports = User
-    ```
-* Model của bảng Note sẽ thêm đoạn code sau để tham chiếu tới User
-    ```js
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }
-  ```
+        const User = mongoose.model('User', userSchema)
 
-
+        module.exports = User
+        ```
 
 
 
