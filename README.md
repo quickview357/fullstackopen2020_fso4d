@@ -1,7 +1,6 @@
-# 4c_4: Creating new note
-* Trong phần này ta chủ yếu test chức năng tạo note. Khi tạo một note thì ta cho phép truyền vào userId để biết người nào tạo.
-* Từ userId này ta suy ra user item, sau đó ta sẽ add note vừa mới tạo ra vào danh sách notes của user
-That it!!!
+# 4c_5: Populate
+* Dùng [populate](https://mongoosejs.com/docs/populate.html) để lấy đầy đủ thông tin của các note của user, nếu không dùng populate thì khi get user nó chỉ lấy danh sách các các noteId trong mảng note
+* Nói chung mongoo cho phép chúng ta lấy thông tin theo như kiểu Join nhiều bảng trong SQL bằng các [syntac](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/#return-the-specified-fields-and-the-id-field-only). Để chi tiết hơn chúng ta cứ vào xem trong phần này để koi cách join.
 
 
 
