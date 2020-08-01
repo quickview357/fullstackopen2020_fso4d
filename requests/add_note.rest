@@ -1,8 +1,9 @@
 POST http://localhost:5000/api/notes
 Content-Type: application/json
+Authorization: bearer 
 
 {
-    "content": "Test add note that created by user 4",    
+    "content": "Test add note that created by user 5",    
     "important": true,
     "userId": "5f1ef94a5780fc22f46b37d7"
 }
