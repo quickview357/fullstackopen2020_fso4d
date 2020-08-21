@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const loginRouter = require('express').Router()
 const User = require('../models/user')
+const mongooseUniqueValidator = require('mongoose-unique-validator')
 
 loginRouter.post('/', async (request, response) => {
   const body = request.body
